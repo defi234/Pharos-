@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pharos Network — Unified Liquidity Layer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #020818;
+    --bg2: #040d24;
+    --cyan: #22d3ee;
+    --cyan2: #38bdf8;
+    --violet: #818cf8;
+    --violet2: #a78bfa;
+    --pink: #f472b6;
+    --amber: #fbbf24;
+    --green: #34d399;
+    --red: #f87171;
+    --indigo: #6366f1;
+    --slate: #64748b;
+    --border: rgba(56,189,248,0.15);
+    --border2: rgba(129,140,248,0.2);
+    --glass: rgba(6,18,52,0.6);
+    --glow-cyan: 0 0 40px rgba(34,211,238,0.3);
+    --glow-violet: 0 0 40px rgba(129,140,248,0.3);
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: #e2e8f0;
+    font-family: 'Syne', sans-serif;
+    overflow-x: hidden;
+    cursor: crosshair;
+  }
+  ::selection { background: rgba(34,211,238,0.25); }
+
+  /* ── CANVAS BG ── */
+  #starfield {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 1.25rem 2.5rem;
+    backdrop-filter: blur(16px);
+    background: rgba(2,8,24,0.6);
+    border-bottom: 0.5px solid var(--border);
+  }
+  .nav-logo {
+    display: flex; align-items: center; gap: 10px; font-size: 1.1rem; font-weight: 800;
+    letter-spacing: 2px; color: #fff;
+  }
+  .nav-logo-icon {
+    width: 32px; height: 32px;
+    background: linear-gradient(135deg, var(--cyan), var(--violet));
+    border-radius: 8px; display: grid; place-items: center;
+    font-size: 16px; box-shadow: var(--glow-cyan);
+  }
+  .nav-links { display: flex; gap: 2rem; list-style: none; }
+  .nav-links a {
+    color: var(--slate); text-decoration: none; font-size: 0.8rem;
+    letter-spacing: 1.5px; text-transform: uppercase; transition: color .2s;
+  }
+  .nav-links a:hover { color: var(--cyan); }
+  .nav-cta {
+    padding: 0.5rem 1.25rem;
+    border: 1px solid var(--cyan); border-radius: 6px;
+    color: var(--cyan); background: transparent; font-family: 'Syne', sans-serif;
+    font-size: 0.78rem; letter-spacing: 1.5px; text-transform: uppercase;
+    cursor: pointer; transition: all .2s;
+  }
+  .nav-cta:hover { background: rgba(34,211,238,0.1); box-shadow: var(--glow-cyan); }
+
+  /* ── SECTIONS ── */
+  section { position: relative; z-index: 1; }
+
+  /* ── HERO ── */
+  #hero {
+    min-height: 100vh; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; text-align: center;
+    padding: 6rem 2rem 4rem;
+  }
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 0.35rem 1rem; border-radius: 20px;
+    border: 1px solid rgba(34,211,238,0.3);
+    background: rgba(34,211,238,0.06);
+    font-family: 'Space Mono', monospace;
+    font-size: 0.7rem; color: var(--cyan); letter-spacing: 2px;
+    margin-bottom: 2rem; animation: fadeDown 0.8s ease both;
+  }
+  .badge-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--cyan); animation: pulse-dot 1.5s ease-in-out infinite;
+  }
+  @keyframes pulse-dot { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(.7)} }
+  h1 {
+    font-size: clamp(2.8rem, 7vw, 6rem); font-weight: 800;
+    line-height: 1.05; letter-spacing: -1px;
+    animation: fadeDown 0.9s ease 0.1s both;
+  }
+  .h1-line1 { color: #fff; }
+  .h1-line2 {
+    background: linear-gradient(90deg, var(--cyan), var(--violet2), var(--pink));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .hero-sub {
+    max-width: 560px; margin: 1.5rem auto 0;
+    color: var(--slate); font-size: 1.05rem; line-height: 1.7;
+    animation: fadeDown 1s ease 0.2s both;
+  }
+  .hero-buttons {
+    display: flex; gap: 1rem; margin-top: 2.5rem; flex-wrap: wrap;
+    justify-content: center; animation: fadeDown 1s ease 0.3s both;
+  }
+  .btn-primary {
+    padding: 0.85rem 2rem; border-radius: 8px;
+    background: linear-gradient(135deg, var(--cyan), var(--violet));
+    color: #020818; font-family: 'Syne', sans-serif;
+    font-weight: 700; font-size: 0.85rem; letter-spacing: 1px;
+    border: none; cursor: pointer; transition: all .2s;
+    box-shadow: 0 0 30px rgba(34,211,238,0.3);
+  }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 0 50px rgba(34,211,238,0.5); }
+  .btn-ghost {
+    padding: 0.85rem 2rem; border-radius: 8px;
+    border: 1px solid var(--border2); color: var(--violet2);
+    background: transparent; font-family: 'Syne', sans-serif;
+    font-size: 0.85rem; letter-spacing: 1px; cursor: pointer; transition: all .2s;
+  }
+  .btn-ghost:hover { background: rgba(129,140,248,0.08); border-color: var(--violet2); }
+  .scroll-hint {
+    position: absolute; bottom: 2.5rem; left: 50%; transform: translateX(-50%);
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
+    color: var(--slate); font-family: 'Space Mono', monospace; font-size: 0.65rem;
+    letter-spacing: 2px; animation: fadeDown 1.2s ease 0.5s both;
+  }
+  .scroll-line {
+    width: 1px; height: 40px;
+    background: linear-gradient(to bottom, var(--slate), transparent);
+    animation: scrollPulse 2s ease-in-out infinite;
+  }
+  @keyframes scrollPulse { 0%,100%{transform:scaleY(1);opacity:1} 50%{transform:scaleY(.5);opacity:.4} }
+
+  /* ── NETWORK CANVAS ── */
+  #network-section {
+    padding: 4rem 2rem 6rem;
+  }
+  .section-label {
+    text-align: center; font-family: 'Space Mono', monospace;
+    font-size: 0.7rem; letter-spacing: 3px; color: var(--slate);
+    text-transform: uppercase; margin-bottom: 1rem;
+  }
+  .section-title {
+    text-align: center; font-size: clamp(1.6rem, 3.5vw, 2.4rem);
+    font-weight: 700; margin-bottom: 0.75rem;
+  }
+  .section-sub {
+    text-align: center; color: var(--slate); font-size: 0.95rem; max-width: 500px;
+    margin: 0 auto 3rem;
+  }
+  #network-canvas {
+    display: block; margin: 0 auto;
+    width: 100%; max-width: 900px;
+    border-radius: 16px;
+    border: 1px solid var(--border);
+    background: radial-gradient(ellipse at 50% 40%, rgba(34,211,238,0.04) 0%, var(--bg2) 70%);
+    cursor: crosshair;
+  }
+  .tooltip {
+    position: fixed; z-index: 200;
+    background: var(--glass); border: 1px solid var(--border2);
+    backdrop-filter: blur(20px); border-radius: 10px;
+    padding: 0.75rem 1rem; max-width: 220px;
+    pointer-events: none; opacity: 0; transition: opacity .15s;
+    font-size: 0.8rem; line-height: 1.5;
+  }
+  .tooltip.show { opacity: 1; }
+  .tooltip-title { color: #fff; font-weight: 700; margin-bottom: 4px; }
+  .tooltip-body { color: var(--slate); }
+
+  /* ── STATS ── */
+  #stats {
+    padding: 2rem;
+    display: flex; justify-content: center; gap: 0; flex-wrap: wrap;
+    max-width: 900px; margin: 0 auto 5rem;
+  }
+  .stat-card {
+    flex: 1; min-width: 160px;
+    padding: 2rem 1.5rem; text-align: center;
+    border: 0.5px solid var(--border);
+    transition: background .2s;
+  }
+  .stat-card:hover { background: rgba(34,211,238,0.04); }
+  .stat-card:first-child { border-radius: 12px 0 0 12px; }
+  .stat-card:last-child { border-radius: 0 12px 12px 0; }
+  .stat-val {
+    font-size: 2.2rem; font-weight: 800;
+    background: linear-gradient(135deg, var(--cyan), var(--violet2));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .stat-label { color: var(--slate); font-size: 0.75rem; letter-spacing: 1.5px; margin-top: 4px; }
+
+  /* ── RWA SECTION ── */
+  #rwa {
+    padding: 4rem 2rem 6rem;
+    max-width: 1000px; margin: 0 auto;
+  }
+  .rwa-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem; margin-top: 3rem;
+  }
+  .rwa-card {
+    border-radius: 14px; padding: 1.75rem 1.5rem;
+    border: 1px solid; position: relative; overflow: hidden;
+    cursor: pointer; transition: all .25s;
+    background: rgba(4,13,36,0.8);
+  }
+  .rwa-card::before {
+    content: ''; position: absolute; inset: 0;
+    opacity: 0; transition: opacity .25s;
+    border-radius: 14px;
+  }
+  .rwa-card:hover { transform: translateY(-4px); }
+  .rwa-card:hover::before { opacity: 1; }
+  .rwa-card.estate { border-color: rgba(59,130,246,0.35); }
+  .rwa-card.estate::before { background: radial-gradient(circle at 20% 20%, rgba(59,130,246,0.12), transparent 70%); }
+  .rwa-card.estate:hover { box-shadow: 0 20px 60px rgba(59,130,246,0.2); }
+  .rwa-card.bonds { border-color: rgba(52,211,153,0.35); }
+  .rwa-card.bonds::before { background: radial-gradient(circle at 20% 20%, rgba(52,211,153,0.1), transparent 70%); }
+  .rwa-card.bonds:hover { box-shadow: 0 20px 60px rgba(52,211,153,0.2); }
+  .rwa-card.commodities { border-color: rgba(251,191,36,0.35); }
+  .rwa-card.commodities::before { background: radial-gradient(circle at 20% 20%, rgba(251,191,36,0.1), transparent 70%); }
+  .rwa-card.commodities:hover { box-shadow: 0 20px 60px rgba(251,191,36,0.2); }
+  .rwa-card.trade { border-color: rgba(167,139,250,0.35); }
+  .rwa-card.trade::before { background: radial-gradient(circle at 20% 20%, rgba(167,139,250,0.12), transparent 70%); }
+  .rwa-card.trade:hover { box-shadow: 0 20px 60px rgba(167,139,250,0.2); }
+  .rwa-icon {
+    font-size: 2rem; margin-bottom: 1rem; display: block;
+    filter: drop-shadow(0 0 8px currentColor);
+  }
+  .rwa-name { font-size: 1rem; font-weight: 700; margin-bottom: 0.4rem; }
+  .rwa-desc { font-size: 0.8rem; color: var(--slate); line-height: 1.6; }
+  .rwa-badge {
+    display: inline-block; margin-top: 1rem;
+    padding: 0.2rem 0.6rem; border-radius: 20px;
+    font-family: 'Space Mono', monospace; font-size: 0.65rem;
+    letter-spacing: 1px;
+  }
+  .estate .rwa-badge { background: rgba(59,130,246,0.12); color: #60a5fa; }
+  .bonds .rwa-badge { background: rgba(52,211,153,0.12); color: #34d399; }
+  .commodities .rwa-badge { background: rgba(251,191,36,0.12); color: var(--amber); }
+  .trade .rwa-badge { background: rgba(167,139,250,0.12); color: var(--violet2); }
+
+  /* ── FEATURES ── */
+  #features {
+    padding: 4rem 2rem 6rem;
+    max-width: 1000px; margin: 0 auto;
+  }
+  .features-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem; margin-top: 3rem;
+  }
+  .feat-card {
+    padding: 2rem; border-radius: 14px;
+    border: 0.5px solid var(--border);
+    background: linear-gradient(135deg, rgba(6,18,52,0.6), rgba(4,13,36,0.4));
+    transition: border-color .2s, transform .2s;
+  }
+  .feat-card:hover { border-color: rgba(34,211,238,0.4); transform: translateY(-2px); }
+  .feat-icon {
+    width: 44px; height: 44px; border-radius: 10px;
+    display: grid; place-items: center; font-size: 1.2rem;
+    margin-bottom: 1.25rem;
+  }
+  .feat-title { font-size: 1rem; font-weight: 700; margin-bottom: 0.5rem; }
+  .feat-desc { font-size: 0.82rem; color: var(--slate); line-height: 1.7; }
+
+  /* ── CTA ── */
+  #cta {
+    padding: 6rem 2rem;
+    text-align: center;
+    background: radial-gradient(ellipse at 50% 0%, rgba(34,211,238,0.07) 0%, transparent 70%);
+    border-top: 0.5px solid var(--border);
+  }
+  #cta h2 { font-size: clamp(1.8rem, 4vw, 3rem); font-weight: 800; margin-bottom: 1rem; }
+  #cta p { color: var(--slate); font-size: 0.95rem; margin-bottom: 2.5rem; }
+  .cta-buttons { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+
+  /* ── FOOTER ── */
+  footer {
+    padding: 2rem 2.5rem;
+    border-top: 0.5px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    font-size: 0.75rem; color: var(--slate); flex-wrap: wrap; gap: 1rem;
+  }
+  .footer-links { display: flex; gap: 1.5rem; }
+  .footer-links a { color: var(--slate); text-decoration: none; transition: color .2s; }
+  .footer-links a:hover { color: var(--cyan); }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeDown {
+    from { opacity: 0; transform: translateY(-20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .reveal { opacity: 0; transform: translateY(30px); transition: opacity .7s ease, transform .7s ease; }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 640px) {
+    nav { padding: 1rem 1.25rem; }
+    .nav-links { display: none; }
+    #stats { flex-direction: column; }
+    .stat-card { border-radius: 10px !important; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Starfield -->
+<canvas id="starfield"></canvas>
+
+<!-- Tooltip -->
+<div class="tooltip" id="tooltip">
+  <div class="tooltip-title" id="tt-title"></div>
+  <div class="tooltip-body" id="tt-body"></div>
+</div>
+
+<!-- Nav -->
+<nav>
+  <div class="nav-logo">
+    <div class="nav-logo-icon">◈</div>
+    PHAROS
+  </div>
+  <ul class="nav-links">
+    <li><a href="#network-section">Network</a></li>
+    <li><a href="#rwa">RWA Assets</a></li>
+    <li><a href="#features">Protocol</a></li>
+    <li><a href="#cta">Developers</a></li>
+  </ul>
+  <button class="nav-cta">Launch App</button>
+</nav>
+
+<!-- Hero -->
+<section id="hero">
+  <div class="hero-badge">
+    <span class="badge-dot"></span>
+    Mainnet Live — v2.4.1
+  </div>
+  <h1>
+    <div class="h1-line1">One Protocol.</div>
+    <div class="h1-line2">Every Chain.</div>
+    <div class="h1-line1">Real Value.</div>
+  </h1>
+  <p class="hero-sub">
+    Pharos Network connects every blockchain into a unified intelligent liquidity layer —
+    bridging Web3 ecosystems with tokenized real-world assets.
+  </p>
+  <div class="hero-buttons">
+    <button class="btn-primary">Explore the Network →</button>
+    <button class="btn-ghost">Read the Whitepaper</button>
+  </div>
+  <div class="scroll-hint">
+    <span>SCROLL</span>
+    <div class="scroll-line"></div>
+  </div>
+</section>
+
+<!-- Network Canvas -->
+<section id="network-section">
+  <div class="section-label">Interoperability Layer</div>
+  <h2 class="section-title reveal">
+    <span style="color:#fff">Connecting</span>
+    <span style="background:linear-gradient(90deg,var(--cyan),var(--violet2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text"> Every Chain</span>
+  </h2>
+  <p class="section-sub reveal">Hover over nodes to explore connected liquidity routes and bidirectional data streams.</p>
+  <canvas id="network-canvas" height="560"></canvas>
+</section>
+
+<!-- Stats -->
+<div id="stats">
+  <div class="stat-card reveal"><div class="stat-val">$42B+</div><div class="stat-label">Total Liquidity</div></div>
+  <div class="stat-card reveal"><div class="stat-val">6</div><div class="stat-label">Chains Connected</div></div>
+  <div class="stat-card reveal"><div class="stat-val">0.3s</div><div class="stat-label">Finality Time</div></div>
+  <div class="stat-card reveal"><div class="stat-val">99.98%</div><div class="stat-label">Uptime SLA</div></div>
+</div>
+
+<!-- RWA Section -->
+<section id="rwa">
+  <div class="section-label">Real-World Assets</div>
+  <h2 class="section-title reveal">
+    <span style="color:#fff">Tokenizing</span>
+    <span style="background:linear-gradient(90deg,var(--green),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text"> the Physical World</span>
+  </h2>
+  <p class="section-sub reveal">Pharos pulls real-world financial instruments on-chain, creating composable, liquid representations of physical value.</p>
+  <div class="rwa-grid">
+    <div class="rwa-card estate reveal">
+      <span class="rwa-icon" style="color:#60a5fa">🏢</span>
+      <div class="rwa-name" style="color:#93c5fd">Real Estate</div>
+      <div class="rwa-desc">Fractional ownership of commercial and residential properties via ERC-3643 compliant tokens with on-chain yield distribution.</div>
+      <span class="rwa-badge">ERC-3643</span>
+    </div>
+    <div class="rwa-card bonds reveal">
+      <span class="rwa-icon" style="color:#34d399">📜</span>
+      <div class="rwa-name" style="color:#6ee7b7">Treasury Bonds</div>
+      <div class="rwa-desc">Tokenized US Treasuries and sovereign debt instruments with automatic coupon settlement and cross-chain portability.</div>
+      <span class="rwa-badge">T-BOND</span>
+    </div>
+    <div class="rwa-card commodities reveal">
+      <span class="rwa-icon" style="color:#fbbf24">🪙</span>
+      <div class="rwa-name" style="color:#fcd34d">Commodities</div>
+      <div class="rwa-desc">Gold, silver, crude oil and agricultural commodities backed by audited physical reserves with real-time oracle pricing.</div>
+      <span class="rwa-badge">ISO-15022</span>
+    </div>
+    <div class="rwa-card trade reveal">
+      <span class="rwa-icon" style="color:#a78bfa">📋</span>
+      <div class="rwa-name" style="color:#c4b5fd">Trade Finance</div>
+      <div class="rwa-desc">Invoice discounting, letters of credit, and supply chain financing instruments tokenized for decentralized liquidity pools.</div>
+      <span class="rwa-badge">UCP-600</span>
+    </div>
+  </div>
+</section>
+
+<!-- Features -->
+<section id="features">
+  <div class="section-label">Protocol Architecture</div>
+  <h2 class="section-title reveal" style="color:#fff">Built for Scale. <span style="color:var(--violet2)">Designed for Trust.</span></h2>
+  <p class="section-sub reveal">Three-layer architecture enabling seamless interoperability between any blockchain and real-world financial system.</p>
+  <div class="features-grid">
+    <div class="feat-card reveal">
+      <div class="feat-icon" style="background:rgba(34,211,238,0.1)">⚡</div>
+      <div class="feat-title">Atomic Cross-Chain Swaps</div>
+      <div class="feat-desc">Trustless asset transfers across heterogeneous chains using hash time-lock contracts with sub-second finality and zero counterparty risk.</div>
+    </div>
+    <div class="feat-card reveal">
+      <div class="feat-icon" style="background:rgba(129,140,248,0.1)">🔮</div>
+      <div class="feat-title">Unified Oracle Layer</div>
+      <div class="feat-desc">Aggregated price feeds from 40+ data sources with cryptographic proof-of-reserve attestations for all tokenized real-world assets.</div>
+    </div>
+    <div class="feat-card reveal">
+      <div class="feat-icon" style="background:rgba(244,114,182,0.1)">🌐</div>
+      <div class="feat-title">Universal Messaging</div>
+      <div class="feat-desc">Arbitrary data and instruction passing between any two chains in the Pharos ecosystem using threshold signature cryptography.</div>
+    </div>
+    <div class="feat-card reveal">
+      <div class="feat-icon" style="background:rgba(52,211,153,0.1)">🛡</div>
+      <div class="feat-title">Compliance Engine</div>
+      <div class="feat-desc">Programmable KYC/AML checks, jurisdiction-aware transfer restrictions, and on-chain regulatory reporting for institutional RWA holders.</div>
+    </div>
+    <div class="feat-card reveal">
+      <div class="feat-icon" style="background:rgba(251,191,36,0.1)">💧</div>
+      <div class="feat-title">Liquidity Aggregation</div>
+      <div class="feat-desc">Smart order routing across 50+ DEXs and liquidity pools simultaneously, minimizing slippage on cross-chain RWA transactions.</div>
+    </div>
+    <div class="feat-card reveal">
+      <div class="feat-icon" style="background:rgba(99,102,241,0.1)">⚙️</div>
+      <div class="feat-title">Modular SDK</div>
+      <div class="feat-desc">Plug-and-play TypeScript and Rust SDKs for integrating Pharos interoperability into any DeFi protocol or TradFi infrastructure.</div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section id="cta">
+  <div class="section-label">Get Started</div>
+  <h2>Ready to <span style="color:var(--cyan)">Bridge</span> Everything?</h2>
+  <p>Join 1,200+ developers building the next generation of cross-chain applications on Pharos.</p>
+  <div class="cta-buttons">
+    <button class="btn-primary">Start Building →</button>
+    <button class="btn-ghost">Read the Docs</button>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer>
+  <div class="nav-logo" style="font-size:0.9rem">
+    <div class="nav-logo-icon" style="width:24px;height:24px;font-size:12px">◈</div>
+    PHAROS NETWORK
+  </div>
+  <div class="footer-links">
+    <a href="#">Twitter</a>
+    <a href="#">Discord</a>
+    <a href="#">GitHub</a>
+    <a href="#">Blog</a>
+    <a href="#">Careers</a>
+  </div>
+  <div>© 2025 Pharos Network Foundation</div>
+</footer>
+
+<script>
+// ── STARFIELD ──
+(function() {
+  const c = document.getElementById('starfield');
+  const ctx = c.getContext('2d');
+  let W, H, stars = [];
+  function resize() {
+    W = c.width = window.innerWidth;
+    H = c.height = window.innerHeight;
+    stars = Array.from({length: 180}, () => ({
+      x: Math.random()*W, y: Math.random()*H,
+      r: Math.random()*1.4+0.2,
+      a: Math.random(), da: (Math.random()-0.5)*0.008,
+      drift: (Math.random()-0.5)*0.04
+    }));
+  }
+  resize(); window.addEventListener('resize', resize);
+  function tick() {
+    ctx.clearRect(0,0,W,H);
+    stars.forEach(s => {
+      s.a = Math.max(0.05, Math.min(1, s.a + s.da));
+      if (s.a<=0.05||s.a>=1) s.da*=-1;
+      s.x = (s.x+s.drift+W)%W;
+      ctx.beginPath(); ctx.arc(s.x,s.y,s.r,0,Math.PI*2);
+      ctx.fillStyle = `rgba(148,163,184,${s.a*0.6})`;
+      ctx.fill();
+    });
+    requestAnimationFrame(tick);
+  }
+  tick();
+})();
+
+// ── NETWORK CANVAS ──
+(function() {
+  const canvas = document.getElementById('network-canvas');
+  const ctx = canvas.getContext('2d');
+  const tooltip = document.getElementById('tooltip');
+  const ttTitle = document.getElementById('tt-title');
+  const ttBody = document.getElementById('tt-body');
+  let W, H, dpr, t = 0, hoveredNode = null, particles = [];
+
+  const chains = [
+    { id:'ETH',  label:'Ethereum',   color:'#8b5cf6', glow:'rgba(139,92,246,0.4)',  sub:'EVM L1 · ERC-20 / ERC-3643',  info:'The backbone of DeFi. Pharos connects Ethereum liquidity pools, staking derivatives, and RWA vaults via optimistic bridge with 7-min finality.', angle: Math.PI*1.5,   r:0 },
+    { id:'SOL',  label:'Solana',     color:'#22d3ee', glow:'rgba(34,211,238,0.4)',  sub:'High-speed L1 · SPL tokens',    info:'Solana\'s parallel execution engine enables Pharos to settle 65,000+ RWA micro-transactions per second with sub-50ms confirmation.', angle: Math.PI*0.17,  r:0 },
+    { id:'BTC',  label:'Bitcoin',    color:'#fbbf24', glow:'rgba(251,191,36,0.4)',  sub:'UTXO L1 · Wrapped BTC',        info:'Bitcoin enters the Pharos ecosystem via threshold-signature custodied wBTC, enabling BTC-backed RWA positions and cross-chain yield.', angle: Math.PI*0.83,  r:0 },
+    { id:'AVAX', label:'Avalanche',  color:'#f87171', glow:'rgba(248,113,113,0.4)', sub:'Subnet architecture · C-Chain', info:'Avalanche subnets host Pharos-native RWA chains with custom validator sets and compliance rulesets for institutional asset managers.', angle: Math.PI*1.17, r:0 },
+    { id:'L2',   label:'Layer 2s',   color:'#f472b6', glow:'rgba(244,114,182,0.4)', sub:'Arbitrum · Optimism · zkSync', info:'L2 aggregation reduces bridging costs by 94%. Pharos routes cross-L2 flows through a shared sequencer for atomic settlement.', angle: Math.PI*1.83, r:0 },
+    { id:'IBC',  label:'Cosmos',     color:'#818cf8', glow:'rgba(129,140,248,0.4)', sub:'IBC Protocol · Osmosis DEX',   info:'Native IBC integration allows Pharos to tap Cosmos ecosystem liquidity — Osmosis pools, ATOM staking, and inter-chain accounts.', angle: Math.PI*0.5,  r:0 },
+  ];
+
+  function resize() {
+    const rect = canvas.getBoundingClientRect();
+    dpr = window.devicePixelRatio || 1;
+    W = rect.width; H = canvas.height = 560;
+    canvas.width = W * dpr;
+    canvas.height = H * dpr;
+    ctx.scale(dpr, dpr);
+    const cx = W/2, cy = H/2 - 30;
+    const orbitR = Math.min(W, H) * 0.33;
+    chains.forEach((c, i) => {
+      c.x = cx + Math.cos(c.angle) * orbitR;
+      c.y = cy + Math.sin(c.angle) * orbitR;
+      c.r = Math.min(W, H) * 0.065;
+    });
+    // Core
+    chains.core = { x: cx, y: cy };
+  }
+
+  function spawnParticle(from, to, color) {
+    const t = Math.random();
+    particles.push({ from, to, color, progress: 0, speed: 0.004 + Math.random()*0.004 });
+  }
+
+  function tick() {
+    t += 0.012;
+    ctx.clearRect(0,0,W,H);
+    const cx = W/2, cy = H/2 - 30;
+    const coreR = Math.min(W,H)*0.095;
+
+    // Subtle grid
+    ctx.strokeStyle = 'rgba(30,58,95,0.35)';
+    ctx.lineWidth = 0.5;
+    const gs = 60;
+    for (let x=0; x<W; x+=gs) { ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,H); ctx.stroke(); }
+    for (let y=0; y<H; y+=gs) { ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke(); }
+
+    // Orbit rings
+    ctx.strokeStyle = 'rgba(56,189,248,0.1)';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([4,8]);
+    ctx.beginPath(); ctx.arc(cx, cy, Math.min(W,H)*0.33, 0, Math.PI*2); ctx.stroke();
+    ctx.beginPath(); ctx.arc(cx, cy, Math.min(W,H)*0.18, 0, Math.PI*2); ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Energy bridges + data streams
+    chains.forEach((chain, i) => {
+      const hovered = hoveredNode && hoveredNode.id === chain.id;
+      const isActive = !hoveredNode || hovered;
+
+      // Base bridge line
+      ctx.beginPath();
+      ctx.moveTo(chain.x, chain.y);
+      ctx.lineTo(cx, cy);
+      const grad = ctx.createLinearGradient(chain.x, chain.y, cx, cy);
+      grad.addColorStop(0, chain.color + '80');
+      grad.addColorStop(1, '#38bdf880');
+      ctx.strokeStyle = grad;
+      ctx.lineWidth = hovered ? 2.5 : 1.2;
+      ctx.globalAlpha = hovered ? 1 : 0.45;
+      ctx.stroke();
+
+      // Animated stream
+      if (isActive) {
+        ctx.setLineDash([8, 10]);
+        ctx.lineDashOffset = -t * 30;
+        ctx.beginPath();
+        ctx.moveTo(chain.x, chain.y);
+        ctx.lineTo(cx, cy);
+        ctx.strokeStyle = chain.color;
+        ctx.lineWidth = 1.2;
+        ctx.globalAlpha = hovered ? 0.9 : 0.5;
+        ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.lineDashOffset = 0;
+      }
+      ctx.globalAlpha = 1;
+    });
+
+    // Particles
+    if (Math.random() < 0.12) {
+      const ch = chains[Math.floor(Math.random()*chains.length)];
+      spawnParticle({x:ch.x,y:ch.y}, {x:cx,y:cy}, ch.color);
+      if (Math.random()<0.4) spawnParticle({x:cx,y:cy},{x:ch.x,y:ch.y},ch.color);
+    }
+    particles = particles.filter(p => p.progress < 1);
+    particles.forEach(p => {
+      p.progress += p.speed;
+      const px = p.from.x + (p.to.x-p.from.x)*p.progress;
+      const py = p.from.y + (p.to.y-p.from.y)*p.progress;
+      ctx.beginPath(); ctx.arc(px,py,2.5,0,Math.PI*2);
+      ctx.fillStyle = p.color;
+      ctx.globalAlpha = (1-p.progress)*0.9+0.1;
+      ctx.shadowColor = p.color; ctx.shadowBlur = 8;
+      ctx.fill(); ctx.shadowBlur = 0; ctx.globalAlpha = 1;
+    });
+
+    // Core hub glow rings
+    [0.25,0.18,0.1].forEach((a,i) => {
+      ctx.beginPath(); ctx.arc(cx,cy, coreR*(1.6-i*0.2),0,Math.PI*2);
+      const cg = ctx.createRadialGradient(cx,cy,0,cx,cy,coreR*(1.6-i*0.2));
+      cg.addColorStop(0,'rgba(34,211,238,0)');
+      cg.addColorStop(1,`rgba(34,211,238,${a*0.3})`);
+      ctx.fillStyle = cg; ctx.fill();
+    });
+
+    // Core circle
+    const pulse = 1 + Math.sin(t)*0.04;
+    ctx.beginPath(); ctx.arc(cx,cy,coreR*pulse,0,Math.PI*2);
+    const coreGrad = ctx.createRadialGradient(cx,cy,0,cx,cy,coreR*pulse);
+    coreGrad.addColorStop(0,'rgba(56,189,248,0.35)');
+    coreGrad.addColorStop(0.5,'rgba(129,140,248,0.25)');
+    coreGrad.addColorStop(1,'rgba(99,102,241,0.1)');
+    ctx.fillStyle = coreGrad;
+    ctx.shadowColor = '#38bdf8'; ctx.shadowBlur = 30;
+    ctx.fill(); ctx.shadowBlur = 0;
+
+    ctx.beginPath(); ctx.arc(cx,cy,coreR*pulse,0,Math.PI*2);
+    ctx.strokeStyle = 'rgba(56,189,248,0.7)'; ctx.lineWidth = 1.2;
+    ctx.stroke();
+
+    // Core text
+    ctx.fillStyle = '#e0f2fe'; ctx.textAlign = 'center';
+    ctx.font = `700 ${Math.min(W,H)*0.026}px Syne, sans-serif`;
+    ctx.fillText('PHAROS', cx, cy-6);
+    ctx.fillStyle = '#7dd3fc';
+    ctx.font = `400 ${Math.min(W,H)*0.016}px Space Mono, monospace`;
+    ctx.fillText('NETWORK', cx, cy+12);
+
+    // Chain nodes
+    chains.forEach(chain => {
+      const hovered = hoveredNode && hoveredNode.id === chain.id;
+      const nodeR = chain.r * (hovered ? 1.12 : 1);
+
+      // Glow
+      ctx.beginPath(); ctx.arc(chain.x, chain.y, nodeR*1.5,0,Math.PI*2);
+      const ng = ctx.createRadialGradient(chain.x,chain.y,0,chain.x,chain.y,nodeR*1.5);
+      ng.addColorStop(0, chain.glow.replace('0.4',hovered?'0.5':'0.2'));
+      ng.addColorStop(1,'transparent');
+      ctx.fillStyle = ng; ctx.fill();
+
+      // Node body
+      ctx.beginPath(); ctx.arc(chain.x,chain.y,nodeR,0,Math.PI*2);
+      const ng2 = ctx.createRadialGradient(chain.x,chain.y-nodeR*0.3,0,chain.x,chain.y,nodeR);
+      ng2.addColorStop(0, chain.color+'55');
+      ng2.addColorStop(1, chain.color+'22');
+      ctx.fillStyle = ng2;
+      ctx.shadowColor = chain.color; ctx.shadowBlur = hovered ? 24 : 12;
+      ctx.fill(); ctx.shadowBlur = 0;
+
+      ctx.beginPath(); ctx.arc(chain.x,chain.y,nodeR,0,Math.PI*2);
+      ctx.strokeStyle = chain.color + (hovered ? 'cc' : '88');
+      ctx.lineWidth = hovered ? 1.8 : 1;
+      ctx.stroke();
+
+      // Text
+      ctx.fillStyle = '#fff'; ctx.textAlign = 'center';
+      ctx.font = `700 ${nodeR*0.55}px Syne, sans-serif`;
+      ctx.fillText(chain.id, chain.x, chain.y+nodeR*0.15);
+      ctx.fillStyle = chain.color+'cc';
+      ctx.font = `400 ${nodeR*0.32}px Syne, sans-serif`;
+      ctx.fillText(chain.label, chain.x, chain.y+nodeR*0.6);
+    });
+
+    // RWA bridge indicator
+    ctx.setLineDash([5,6]);
+    ctx.strokeStyle = 'rgba(56,189,248,0.35)';
+    ctx.lineWidth = 1.2;
+    ctx.beginPath(); ctx.moveTo(cx, cy+coreR*pulse); ctx.lineTo(cx, H-30); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = 'rgba(34,211,238,0.7)';
+    ctx.beginPath();
+    ctx.moveTo(cx, H-20); ctx.lineTo(cx-5, H-30); ctx.lineTo(cx+5, H-30); ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = '#64748b'; ctx.textAlign = 'center';
+    ctx.font = '11px Space Mono, monospace';
+    ctx.fillText('RWA TOKENIZATION LAYER', cx, H-10);
+
+    requestAnimationFrame(tick);
+  }
+
+  function getHitNode(mx, my) {
+    for (const ch of chains) {
+      const dx = mx-ch.x, dy = my-ch.y;
+      if (Math.sqrt(dx*dx+dy*dy) < ch.r*1.3) return ch;
+    }
+    return null;
+  }
+
+  canvas.addEventListener('mousemove', e => {
+    const rect = canvas.getBoundingClientRect();
+    const mx = e.clientX-rect.left, my = e.clientY-rect.top;
+    const node = getHitNode(mx,my);
+    hoveredNode = node;
+    canvas.style.cursor = node ? 'pointer' : 'crosshair';
+    if (node) {
+      ttTitle.textContent = `${node.id} — ${node.label}`;
+      ttBody.innerHTML = `<div style="color:#38bdf8;font-size:0.7rem;margin-bottom:4px;font-family:'Space Mono',monospace">${node.sub}</div>${node.info}`;
+      tooltip.classList.add('show');
+      tooltip.style.left = (e.clientX+16)+'px';
+      tooltip.style.top  = (e.clientY-20)+'px';
+    } else {
+      tooltip.classList.remove('show');
+    }
+  });
+  canvas.addEventListener('mouseleave', () => {
+    hoveredNode = null;
+    tooltip.classList.remove('show');
+  });
+
+  // Keep tooltip in viewport
+  document.addEventListener('mousemove', e => {
+    if (!tooltip.classList.contains('show')) return;
+    let x = e.clientX+16, y = e.clientY-20;
+    if (x+240>window.innerWidth) x = e.clientX-240;
+    if (y+160>window.innerHeight) y = e.clientY-160;
+    tooltip.style.left = x+'px'; tooltip.style.top = y+'px';
+  });
+
+  resize();
+  window.addEventListener('resize', () => { resize(); });
+  tick();
+})();
+
+// ── SCROLL REVEAL ──
+(function() {
+  const els = document.querySelectorAll('.reveal');
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach((e, i) => {
+      if (e.isIntersecting) {
+        setTimeout(() => e.target.classList.add('visible'), 80);
+        obs.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.12 });
+  els.forEach(el => obs.observe(el));
+})();
+</script>
+</body>
+</html>
